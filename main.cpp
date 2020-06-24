@@ -1,11 +1,15 @@
 #include <iostream>
 #include <set>
 #include <map>
+#include <vector>
+#include <random>
+#include <unordered_set>
+#include <algorithm>
 
 using namespace std;
 
-enum Suit {C, D, H ,S, NT};
-enum Rank {N2, N3, N4, N5, N6, N7, N8, N9, T, J, Q, K, A};
+enum class Suit {C, D, H ,S, NT};
+enum class Rank {N2, N3, N4, N5, N6, N7, N8, N9, T, J, Q, K, A};
 
 ostream& operator<< (ostream& out, Suit suit) {
    switch (suit) {
@@ -27,7 +31,7 @@ ostream& operator<< (ostream& out, Suit suit) {
 
 ostream& operator<< (ostream& out, Rank rank) {
    if (rank < Rank::T)
-      out << rank + 2;
+      out << static_cast<int>(rank) + 2;
    else {
       switch (rank) {
 	 case Rank::T:
@@ -75,23 +79,31 @@ struct Card {
 
 };
 
+Card cardSelector(int i) {
+   Suit suit {i / 13};
+   Rank rank {i % 13};
+   Card card = {suit, rank};
+   return card;
+}
+
 ostream& operator<< (ostream& out, Card card) {
    out << card.suit << card.rank;
    return out;
 }
 
 class Hand {
+   //TODO: define copy constructor
    private:
-      set<Card> all;
+      set<Card>            all;
       map<Suit, set<Card>> sortedHand {{Suit::C, {}}, {Suit::D, {}}, {Suit::H, {}}, {Suit::S, {}}};
       int       length;
    public:
       Hand(set<Card>);
-      set<Card> get() {return all;}
-      set<Card> get(Suit suit) {return sortedHand.at(suit);}
+      set<Card>            get() {return all;}
+      set<Card>            get(Suit suit) {return sortedHand.at(suit);}
       map<Suit, set<Card>> getSortedHand() {return sortedHand;}
-      int       size() {return all.size();}
-      Hand&     play(Card);
+      int                  size() {return all.size();}
+      Hand&                play(Card); //TODO: implement play function
 };
 
 Hand::Hand(set<Card> cards) {
@@ -117,16 +129,103 @@ ostream& operator<< (ostream& out, Hand hand) {
    return out;
 }
 
+enum class Position {E, S, W, N};
+
+Position operator+ (Position pos, int n) {
+   return static_cast<Position> ((static_cast<int>(pos) + n) % 4);
+}
+
+ostream& operator<< (ostream& out, Position pos) {
+   switch (pos) {
+      case Position::E:
+	 out << "E";
+	 break;
+      case Position::S:
+	 out << "S";
+	 break;
+      case Position::W:
+	 out << "W";
+	 break;
+      case Position::N:
+	 out << "N";
+	 break;
+   }
+   return out;
+}
+
+class Board {
+   private:
+      map<Position, Hand> config;
+   public:
+      Board();
+      Board(map<Position, Hand> config) {this->config = config;}
+      map<Position, Hand> get() {return config;}
+      Hand get(Position pos) {return config.at(pos);}
+};
+
+map<Position, Hand> boardBuilder(vector<int> seq, Position dealer) {
+   if (seq.size() != 52)
+      throw length_error("attempting to build board from incorrect number of cards");
+   map<Position, set<Card>> board {{Position::E, {}}, {Position::S, {}}, {Position::W, {}}, {Position::N, {}}};
+   unordered_set<int> dupChecker;
+   Position player = dealer;
+   for (auto num : seq) {
+      if (dupChecker.find(num) != dupChecker.end()) {
+	 string msg = "Attempting to deal card No. ";
+	 msg.append(to_string(num)).append(" more than once.");
+	 throw invalid_argument(msg);
+      }
+      else {
+	 dupChecker.insert(num);
+	 board.at(player).insert(cardSelector(num));
+	 player = player + 1;
+      }
+   }
+   map<Position, Hand> result;
+   for (auto& [pos, cards] : board)
+      result.insert(pair<Position, Hand>(pos, Hand(cards)));
+   return result;
+}
+
+ostream& operator<< (ostream& out, Board board) {
+   cout << "----------" << endl;
+   for (auto& [pos, Hand] : board.get())
+      out << pos << ":" << endl << Hand << endl;
+   cout << "----------" << endl;
+   return out;
+}
+
+Board::Board() {
+   // Unconstrained random deal
+   vector<int> seq;
+   seq.reserve(54);
+   for (int i = 0; i < 52; i++) {
+      seq.push_back(i);
+   }
+   random_device rd;
+   mt19937 rg(rd());
+   shuffle(seq.begin(), seq.end(), rg);
+   config = boardBuilder(seq, Position::E);
+}
+
 int main(void) {
-   Card egCard {Suit::C, Rank::N2};
-   Card egCard2 {Suit::H, Rank::N2};
-   Card egCard3 {Suit::C, Rank::N3};
-   set<Card> cards {egCard, egCard3};
-   Hand egHand (cards);
-   cout << egCard << endl;
-   cout << egCard << endl;
-   cout << (egCard == egCard2) << endl;
-   cout << egHand;
+   try {
+      Card egCard {Suit::C, Rank::N2};
+      Card egCard2 {Suit::H, Rank::N2};
+      Card egCard3 {Suit::C, Rank::N3};
+      set<Card> cards {egCard, egCard3};
+      Hand egHand(cards);
+      Board egBoard;
+      cout << egCard << endl;
+      cout << egCard << endl;
+      cout << (egCard == egCard2) << endl;
+      cout << egHand << endl;
+      cout << egBoard << endl;
+   } catch (...) {
+      cout << "Something wrong";
+      return 1;
+   }
+
    return 0;
 }
 
