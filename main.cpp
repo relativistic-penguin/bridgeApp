@@ -5,6 +5,7 @@
 #include <random>
 #include <unordered_set>
 #include <algorithm>
+#include <fstream>
 
 using namespace std;
 
@@ -115,17 +116,17 @@ Hand::Hand(set<Card> cards) {
 }
 
 ostream& operator<< (ostream& out, Hand hand) {
-   cout << "*****" << endl;
+   out << "*****" << endl;
    for (auto& [suit, cards] : hand.getSortedHand()) {
-      cout << suit << ": ";
+      out << suit << ": ";
       for (auto& card : cards) {
 	 out << card.rank << " ";
       }
       if (!cards.size())
-	 cout << "-";
+	 out << "-";
       out << endl;
    }
-   cout << "*****" << endl;
+   out << "*****" << endl;
    return out;
 }
 
@@ -188,10 +189,10 @@ map<Position, Hand> boardBuilder(vector<int> seq, Position dealer) {
 }
 
 ostream& operator<< (ostream& out, Board board) {
-   cout << "----------" << endl;
+   out << "----------" << endl;
    for (auto& [pos, Hand] : board.get())
       out << pos << ":" << endl << Hand << endl;
-   cout << "----------" << endl;
+   out << "----------" << endl;
    return out;
 }
 
@@ -208,7 +209,7 @@ Board::Board() {
    config = boardBuilder(seq, Position::E);
 }
 
-int main(void) {
+void test() {
    try {
       Card egCard {Suit::C, Rank::N2};
       Card egCard2 {Suit::H, Rank::N2};
@@ -223,9 +224,20 @@ int main(void) {
       cout << egBoard << endl;
    } catch (...) {
       cout << "Something wrong";
-      return 1;
    }
+}
 
+int main(void) {
+   test();
+   ofstream of;
+   of.open("output.txt");
+   int num;
+   cin >> num;
+   for (int i = 0; i < num; i++) {
+      Board newBoard;
+      of << newBoard;
+   }
+   of.close();
    return 0;
 }
 
