@@ -15,5 +15,11 @@ std::ostream& operator<< (std::ostream& out, Suit suit);
 
 std::ostream& operator<< (std::ostream& out, Rank rank);
 
+const std::initializer_list suitList = {Suit::C, Suit::D, Suit::H, Suit::S};
+const std::initializer_list rankList = {Rank::J, Rank::Q, Rank::K, Rank::A};
+const std::initializer_list posList  = {Position::E, Position::S, Position::W, Position::N};
+const int CARDS = 13;
+
+
 #endif
 
