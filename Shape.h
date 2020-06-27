@@ -29,6 +29,7 @@ class Shape {
       void               inc(Position pos, Suit suit) {set(pos, suit, get(pos, suit) + 1);}
       bool               checkFix(Position pos, Suit suit) const {return fixed.at(pos).at(suit);}
       bool               operator== (const Shape&) const;
+      bool               operator<  (const Shape&) const;
 };
 
 ostream& operator<< (ostream&, Shape);

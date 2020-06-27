@@ -51,17 +51,21 @@ ostream& operator<< (ostream& out, Shape shape) {
    using std::endl;
    out << "   ";
    for (auto& suit : suitList) {
-      out << suit << " ";
+      out << suit << "  ";
    }
    out << "| T\n";
    for (auto& pos : posList) {
       out << " " << pos << " ";
       for (auto& suit : suitList) {
-	 out << shape.get(pos, suit) << " ";
+	 out << shape.get(pos, suit);
+	 if (shape.get(pos, suit) > 9)
+	    out << " ";
+	 else
+	    out << "  ";
       }
       out << "| " << CARDS - shape.getPosVac().at(pos) << endl;
    }
-   out << "----------\n T ";
+   out << "-----------------\n T ";
    for (auto& suit : suitList)
       out << CARDS - shape.getSuitVac().at(suit) << " ";
    out << endl;
@@ -74,4 +78,24 @@ bool Shape::operator== (const Shape& other) const {
 	 if (rep1.at(pos).at(suit) != other.get(pos, suit) || fixed.at(pos).at(suit) != other.checkFix(pos, suit))
 	    return false;
    return true;
+}
+
+bool Shape::operator< (const Shape& other) const {
+   for (auto& pos : posList) {
+      for (auto& suit : suitList) {
+	 if (rep1.at(pos).at(suit) < other.get(pos, suit))
+	    return true;
+	 else if (rep1.at(pos).at(suit) > other.get(pos, suit))
+	    return false;
+      }
+   }
+   for (auto& pos : posList) {
+      for (auto& suit : suitList) {
+	 if (fixed.at(pos).at(suit) < other.checkFix(pos, suit))
+	    return true;
+	 else if (fixed.at(pos).at(suit) > other.checkFix(pos, suit))
+	    return false;
+      }
+   }
+   return false;
 }
