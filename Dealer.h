@@ -17,16 +17,23 @@ class Dealer {
       specificShapeType          specificShapeRules;
       nonSpecificShapeType       nonSpecificShapeRules;
       hcpType                    hcpRules;
+      vector<Shape>              unpopulatedShapes;
       map<Shape, vector<Shape>>  possibleShapes;
       vector<Value>              possibleValues;
       bool                       ready;
 
-      vector<Shape> nonSpecificShapeFilter(const vector<pair<Position, int>>& filters, Shape& shape);
-      vector<Shape> shapePopulate(const Shape& shape);
-      vector<Shape> posPopulate(const vector<Shape>& shapes, Position pos);
+      vector<Shape>              nonSpecificShapeFilter(const vector<pair<Position, int>>& filters, Shape& shape);
+      vector<Shape>              shapePopulate(const Shape& shape);
+      vector<Shape>              posPopulate(const vector<Shape>& shapes, Position pos);
 
-      vector<Value> hcpFilter(const map<Position, pair<int, int>>& filter, const Value& value);
-      vector<Value> rowHCPfilter(const vector<Value>& values, const Position& pos, int min, int max, bool complete);
+      vector<Value>              hcpFilter(const map<Position, pair<int, int>>& filter, const Value& value);
+      vector<Value>	         rowHCPfilter(const vector<Value>& values, const Position& pos, int min, int max, bool complete);
+
+      vector<Shape>              compatibleUnpopStates(Value);
+      vector<Shape>              compatibleFinalStates(Value);
+
+      template <typename T>
+      void			 shuffleCards(vector<T>&);
 
    public:
       Dealer();
@@ -40,7 +47,7 @@ class Dealer {
       bool  isReady() {return ready;} 
       Board deal();
 
-      void test(ostream&, bool showShape = false, bool showValue = false);
+      void  test(ostream&, bool showShape = false, bool showValue = false);
 };
 
 #endif

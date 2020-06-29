@@ -18,6 +18,7 @@ class Shape {
    public:
       Shape();
       void               set(Position, Suit, int, bool fix = false);
+      void               forceSet(Position, Suit, int);
       int                get(Position pos, Suit suit) const {return rep1.at(pos).at(suit);}
       map<Position, int> get(Suit suit) const {return rep2.at(suit);}
       map<Suit, int>     get(Position pos) const {return rep1.at(pos);}

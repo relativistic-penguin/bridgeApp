@@ -10,6 +10,7 @@
 #include "Shape.h"
 #include "Value.h"
 #include "Dealer.h"
+#include "ValueAllocator.h"
 
 using namespace std;
 
@@ -105,11 +106,98 @@ void advDealTest() {
       cout << resultValues[i];
    }
 */
+   cout << "----------- End of Value Population test ----------" << endl;
+}
+
+void valueAllocationTest(ostream& out) {
+   Value egValue;
+   Shape egShape;
+   egShape.set(Position::E, Suit::C, 13, true);
+   egShape.set(Position::S, Suit::D, 13, true);
+   egShape.set(Position::W, Suit::H, 13, true);
+   egShape.set(Position::N, Suit::S, 13, true);
+   out << "Using shape: " << endl;
+   out << egShape;
+   egValue.set(Position::E, Rank::A, 1, true);
+   egValue.set(Position::E, Rank::K, 1, true);
+   egValue.set(Position::E, Rank::Q, 1, true);
+   egValue.set(Position::E, Rank::J, 1, true);
+
+   egValue.set(Position::S, Rank::A, 1, true);
+   egValue.set(Position::S, Rank::K, 1, true);
+   egValue.set(Position::S, Rank::Q, 1, true);
+   egValue.set(Position::S, Rank::J, 1, true);
+
+   egValue.set(Position::W, Rank::A, 1, true);
+   egValue.set(Position::W, Rank::K, 1, true);
+   egValue.set(Position::W, Rank::Q, 1, true);
+   egValue.set(Position::W, Rank::J, 1, true);
+
+   egValue.set(Position::N, Rank::A, 1, true);
+   egValue.set(Position::N, Rank::K, 1, true);
+   egValue.set(Position::N, Rank::Q, 1, true);
+   egValue.set(Position::N, Rank::J, 1, true);
+   out << "Using value: " << endl;
+   out << egValue;
+
+   ValueAllocator egValueAllocator(egValue, egShape);
+   typedef map<Position, map<Rank, vector<Suit>>> allocType;
+   vector<allocType> allocations = egValueAllocator.getAllocation(true);
+   for (int i = 0; i < allocations.size(); i++) {
+      out << "=========== Allocation No. " << i << endl;
+   printAlloc(allocations[i], out);
+   }
+}
+
+void valueAllocationTest2(ostream& out) {
+   Value egValue;
+   Shape egShape;
+   egShape.set(Position::E, Suit::C, 13, true);
+   egShape.set(Position::S, Suit::D, 13, true);
+   egShape.set(Position::W, Suit::H, 10, true);
+   egShape.set(Position::W, Suit::S, 3, true);
+   egShape.set(Position::N, Suit::S, 10, true);
+   egShape.set(Position::N, Suit::H, 3, true);
+   out << "Using shape: " << endl;
+   out << egShape;
+   egValue.set(Position::E, Rank::A, 1, true);
+   egValue.set(Position::E, Rank::K, 1, true);
+   egValue.set(Position::E, Rank::Q, 1, true);
+   egValue.set(Position::E, Rank::J, 1, true);
+
+   egValue.set(Position::S, Rank::A, 1, true);
+   egValue.set(Position::S, Rank::K, 1, true);
+   egValue.set(Position::S, Rank::Q, 1, true);
+   egValue.set(Position::S, Rank::J, 1, true);
+
+   egValue.set(Position::W, Rank::A, 2, true);
+   egValue.set(Position::W, Rank::K, 1, true);
+   egValue.set(Position::W, Rank::Q, 1, true);
+   egValue.set(Position::W, Rank::J, 1, true);
+
+   egValue.set(Position::N, Rank::A, 0, true);
+   egValue.set(Position::N, Rank::K, 1, true);
+   egValue.set(Position::N, Rank::Q, 1, true);
+   egValue.set(Position::N, Rank::J, 1, true);
+   out << "Using value: " << endl;
+   out << egValue;
+
+   ValueAllocator egValueAllocator(egValue, egShape);
+   typedef map<Position, map<Rank, vector<Suit>>> allocType;
+   vector<allocType> allocations = egValueAllocator.getAllocation(true);
+   for (int i = 0; i < allocations.size(); i++) {
+      out << "=========== Allocation No. " << i << endl;
+   printAlloc(allocations[i], out);
+   }
 }
 
 int main(void) {
    try {
-      advDealTest();
+      ofstream of("debug.txt");
+      auto coutbuf = cout.rdbuf(of.rdbuf());
+      //advDealTest();
+      valueAllocationTest2(cout);
+      of.close();
    } catch (exception& ex) {
       cout << "Run time exception occurred.\n";
       cout << ex.what();

@@ -21,6 +21,7 @@ class Value {
    public:
       Value();
       void               set(Position, Rank, int, bool fix = false);
+      void               forceSet(Position, Rank, int);
       int                get(Position pos, Rank rank) const {return rep1.at(pos).at(rank);}
       map<Position, int> get(Rank suit) const {return rep2.at(suit);}
       map<Rank, int>     get(Position pos) const {return rep1.at(pos);}

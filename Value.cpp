@@ -37,6 +37,12 @@ void Value::set(Position pos, Rank rank, int val, bool fix) {
       fixed.at(pos).at(rank) = true;
 }
 
+void Value::forceSet(Position pos, Rank rank, int val) {
+   fixed[pos][rank] = false;
+   set(pos, rank, val, true);
+   completed = false;
+}
+
 bool Value::complete() {
    if (completed) 
       return true;

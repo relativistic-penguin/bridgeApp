@@ -37,6 +37,12 @@ void Shape::set(Position pos, Suit suit, int val, bool fix) {
       fixed.at(pos).at(suit) = true;
 }
 
+void Shape::forceSet(Position pos, Suit suit, int val) {
+   fixed.at(pos).at(suit) = false;
+   set(pos, suit, val, true);
+   completed = false;
+}
+
 bool Shape::complete() {
    if (completed) 
       return true;

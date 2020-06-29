@@ -1,4 +1,6 @@
 #include <stack>
+#include <random>
+#include <algorithm>
 #include "Dealer.h"
 
 using namespace std;
@@ -15,25 +17,42 @@ Dealer::Dealer(specificShapeType spShapeRules, nonSpecificShapeType nonSpShapeRu
    specificShapeRules       = spShapeRules;
    nonSpecificShapeRules    = nonSpShapeRules;
    hcpRules                 = valueRules;
-   ready                    = false;
+   getReady();
 }
 
-void  Dealer::setSpecificShapeRules(specificShapeType rule) {
+Board Dealer::deal() {
+   Board egBoard;
+   shuffleCards(possibleValues);
+   return egBoard;
+}
+
+//vector<Shape> Dealer::compatibleUnpopStates(Value valCfg) {
+//   
+//}
+
+template <typename Tp>
+void Dealer::shuffleCards(vector<Tp>& targetList) {
+   random_device rd;
+   mt19937       rdGen(rd());
+   shuffle(targetList.begin(), targetList.end(), rdGen);
+}
+
+void Dealer::setSpecificShapeRules(specificShapeType rule) {
    specificShapeRules = rule;
    ready = false;
 }
 
-void  Dealer::setNonSpecificShapeRules(nonSpecificShapeType rule) {
+void Dealer::setNonSpecificShapeRules(nonSpecificShapeType rule) {
    nonSpecificShapeRules = rule;
    ready = false;
 }
 
-void  Dealer::setHCPrules(hcpType rule) {
+void Dealer::setHCPrules(hcpType rule) {
    hcpRules = rule;
    ready = false;
 }
 
-void  Dealer::getReady() {
+void Dealer::getReady() {
    if (!ready) {
       Shape initShape;
       for (auto& [pos, suitRule] : specificShapeRules) {
