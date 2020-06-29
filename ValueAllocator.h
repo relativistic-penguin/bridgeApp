@@ -20,7 +20,6 @@ class ValueAllocator {
       bool                  usable;
 
 //      void                  getReady();
-      allocType             getAlloc() {return alloc;}
       vector<Suit>          get(Position pos, Rank rank) {return alloc.at(pos).at(rank);}
       void                  add(Position pos, Rank rank, Suit suit) {alloc[pos][rank].push_back(suit);}
       void                  set(Position pos, Rank rank, vector<Suit> suits) {alloc[pos][rank] = suits;} 
@@ -31,9 +30,10 @@ class ValueAllocator {
 //      bool               isReady();
 //      bool	         isUsable();
 //      bool               calculate();
-      Value              getVal() {return  reqVal;}
-      Shape              getShape() {return reqShape;}
-      vector<allocType>  getAllocation(bool);
+      Value		   getVal() {return  reqVal;}
+      Shape		   getShape() {return reqShape;}
+      vector<allocType>	   getAllocation(bool);
+      allocType		   getAlloc() {return alloc;}
 };
 
 void printAlloc(map<Position, map<Rank, vector<Suit>>> alloc, ostream& out);

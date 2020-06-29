@@ -1,13 +1,38 @@
 #include <stack>
 #include <random>
 #include <algorithm>
+#include <set>
+#include <map>
 #include "Dealer.h"
+#include "ValueAllocator.h"
+#include "Hand.h"
 
 using namespace std;
 
 typedef map<Position, map<Suit, int>> specificShapeType;
-typedef vector<pair<Position, int>> nonSpecificShapeType;
-typedef map<Position, pair<int, int>> hcpType; 
+typedef vector<pair<Position, int>>   nonSpecificShapeType;
+typedef map<Position, pair<int, int>> hcpType;
+typedef map<Position, map<Rank, vector<Suit>>> allocType;
+template <typename Tp>
+void shuffleCards(vector<Tp>& targetList) {
+   random_device rd;
+   mt19937       rdGen(rd());
+   shuffle(targetList.begin(), targetList.end(), rdGen);
+}
+
+map<Suit, vector<Card>> numDeckConstructor() {
+   map<Suit, vector<Card>> results;
+   for (auto& suit : suitList) {
+      vector<Card> suitDeck;
+      for (auto& rank : numRankList) {
+	 Card newCard {suit, rank};
+	 suitDeck.push_back(newCard);
+      }
+      results.insert(make_pair(suit, suitDeck));
+   }
+   return results;
+}
+map<Suit, vector<Card>> numDeck = numDeckConstructor();
 
 Dealer::Dealer() {
    ready = false;
@@ -17,25 +42,71 @@ Dealer::Dealer(specificShapeType spShapeRules, nonSpecificShapeType nonSpShapeRu
    specificShapeRules       = spShapeRules;
    nonSpecificShapeRules    = nonSpShapeRules;
    hcpRules                 = valueRules;
+   ready = false;
    getReady();
+}
+
+Board dealFromAlloc(allocType alloc, Shape shape) {
+   map<Position, set<Card>> newConfig;
+   for (auto& pos : posList) {
+      set<Card> newSet;
+      for (auto& rank : rankList) {
+	 for (auto& suit : alloc.at(pos).at(rank)) {
+	    Card newCard {suit, rank};
+	    newSet.insert(newCard);
+	    shape.forceSet(pos, suit, shape.get(pos,suit) - 1);
+	 }
+      }
+      newConfig.insert(make_pair(pos, newSet));
+   }
+   map<Suit, int> dealCounter;
+   for (auto& suit : suitList) {
+      shuffleCards(numDeck.at(suit));
+      dealCounter.insert(make_pair(suit, 0));
+   }
+   for (auto& pos : posList) {
+      for (auto& suit : suitList) {
+	 int requiredNum = shape.get(pos, suit) + dealCounter.at(suit);
+	 for (; dealCounter.at(suit) < requiredNum; dealCounter.at(suit)++) {
+	    newConfig.at(pos).insert(numDeck.at(suit).at(dealCounter.at(suit)));
+	 }
+      }
+   }
+   map<Position, Hand> newHandConfig;
+   for (auto& [pos, cardSet] : newConfig) {
+      Hand newHand(cardSet);
+      newHandConfig.insert(make_pair(pos, newHand));
+   }
+   Board newBoard(newHandConfig);
+   return newBoard;
 }
 
 Board Dealer::deal() {
    Board egBoard;
    shuffleCards(possibleValues);
+   shuffleCards(unpopulatedShapes);
+   for (auto& chosenValue : possibleValues) {
+      for (auto& chosenUnpopShape : unpopulatedShapes) {
+	 vector<Shape>& chosenShapeRange = possibleShapes.at(chosenUnpopShape);
+	 shuffleCards(chosenShapeRange);
+	 for (auto& chosenShape : chosenShapeRange) {
+	    ValueAllocator valAlloc(chosenValue, chosenShape);
+	    auto possibleAllocations = valAlloc.getAllocation(true);
+	    if (possibleAllocations.size()) {
+	       shuffleCards(possibleAllocations);
+	       Board newBoard = dealFromAlloc(possibleAllocations.front(), valAlloc.getShape());
+	       return newBoard;
+	    }
+	 }
+      }
+   }
+   cout << "Warning: Not Possible" << endl;
    return egBoard;
 }
 
 //vector<Shape> Dealer::compatibleUnpopStates(Value valCfg) {
 //   
 //}
-
-template <typename Tp>
-void Dealer::shuffleCards(vector<Tp>& targetList) {
-   random_device rd;
-   mt19937       rdGen(rd());
-   shuffle(targetList.begin(), targetList.end(), rdGen);
-}
 
 void Dealer::setSpecificShapeRules(specificShapeType rule) {
    specificShapeRules = rule;
@@ -53,36 +124,43 @@ void Dealer::setHCPrules(hcpType rule) {
 }
 
 void Dealer::getReady() {
+   cout << "Getting ready!" << endl;
    if (!ready) {
+      cout << "Not ready yet. now getting ready..." << endl;
       Shape initShape;
       for (auto& [pos, suitRule] : specificShapeRules) {
 	 for (auto& [suit, val] : suitRule) {
 	    initShape.set(pos, suit, val, true);
 	 }
       }
-//      cout << "Init shape is" << endl;
-//      cout << initShape;
+      cout << "Init shape is" << endl;
+      cout << initShape;
       vector<Shape> unpopulatedShapes { nonSpecificShapeFilter(nonSpecificShapeRules, initShape) };
-//      cout << "Non specific shape rules are: " << endl;
-//      for (auto& [pos, val] : nonSpecificShapeRules) {
-//	 cout << pos << ": " << val << endl;
-//      }
-//      cout << "==> unpopulated shape is: " << endl;
-//      for (auto& shape : unpopulatedShapes)
-//	 cout << shape;
-      for (auto& unpopulatedShape : unpopulatedShapes) {
-	 vector<Shape> populatedShapes = shapePopulate(unpopulatedShape);
-//	 cout << "Populated shapes: " << endl;
-//	 for (auto& populatedShape : populatedShapes) {
-//	    cout << populatedShape;
-//	 }
-	 possibleShapes.insert( pair<Shape, vector<Shape>>(unpopulatedShape, populatedShapes) );
+      cout << "Non specific shape rules are: " << endl;
+      for (auto& [pos, val] : nonSpecificShapeRules) {
+	 cout << pos << ": " << val << endl;
       }
-
+      cout << "==> unpopulated shape is: " << endl;
+      for (auto& shape : unpopulatedShapes)
+	 cout << shape;
+      int count = 0;
+      for (auto unpopulatedShape : unpopulatedShapes) {
+	 cout << "Run No. " << ++count << endl;
+	 vector<Shape> populatedShapes = shapePopulate(unpopulatedShape);
+	 cout << "Populated shapes: " << endl;
+	 for (auto populatedShape : populatedShapes) {
+	    cout << populatedShape;
+	 }
+	 cout << "Finished looking for populated shapes for this unpopulated shape." << endl;
+	 possibleShapes.insert( pair<Shape, vector<Shape>>(unpopulatedShape, populatedShapes) );
+	 cout << "inserted" << endl;
+      }
+      cout << "I am over the loop " << endl;
       Value initValue;
       possibleValues = hcpFilter(hcpRules, initValue);
       ready = true;
    }
+   cout << "Now ready!" << endl;
 }
 
 void Dealer::test(ostream& out, bool showShape, bool showValue) {
@@ -115,10 +193,14 @@ vector<Value> Dealer::hcpFilter(const map<Position, pair<int, int>>& filter, con
    int i = 0;
    for (auto& pos : posList) {
       i++;
+      cout << "Filtering HCP for pos: " << pos << endl;
+      
       if (filter.find(pos) != filter.end())
 	 results = rowHCPfilter(results, pos, filter.at(pos).first, filter.at(pos).second, pos == *(posList.end() - 1));
       else
 	 results = rowHCPfilter(results, pos, 0, (valueHCP.at(Rank::J) + valueHCP.at(Rank::Q) + valueHCP.at(Rank::K) + valueHCP.at(Rank::A) ) * VAL_CARDS, pos == *(posList.end() -1));
+
+      cout << "Now results have " << results.size() << " entries.\n";
    }
    return results;
 }

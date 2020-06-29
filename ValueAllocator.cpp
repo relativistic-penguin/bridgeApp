@@ -77,12 +77,12 @@ vector<allocType> ValueAllocator::getAllocation(bool all) {
    vector<allocType> results;
    int counter = 0;
    while (!todo.empty()) {
-      cout << "Run No. " << ++counter << endl;
+      //cout << "Run No. " << ++counter << endl;
       if (!all && !results.empty()) {
 	 return results;
       }
       auto vlAllocator = todo.top();
-      cout << vlAllocator;
+      //cout << vlAllocator;
       todo.pop();
       Position pos;
       Rank rank;
@@ -109,7 +109,7 @@ vector<allocType> ValueAllocator::getAllocation(bool all) {
       }
       if (!determined) {
 	 //Prior to push. Need to check if value allocation is compatible with Value and Shape.
-	 cout << "Pushing new results " << endl;	 
+	 //cout << "Pushing new results " << endl;	 
 	 results.push_back(vlAllocator.getAlloc());
       }
       else {

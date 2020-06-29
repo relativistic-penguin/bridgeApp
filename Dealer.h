@@ -32,9 +32,6 @@ class Dealer {
       vector<Shape>              compatibleUnpopStates(Value);
       vector<Shape>              compatibleFinalStates(Value);
 
-      template <typename T>
-      void			 shuffleCards(vector<T>&);
-
    public:
       Dealer();
       Dealer(specificShapeType, nonSpecificShapeType, hcpType);
@@ -49,5 +46,9 @@ class Dealer {
 
       void  test(ostream&, bool showShape = false, bool showValue = false);
 };
+
+template <typename Tp>
+void shuffleCards(vector<Tp>& targetList); 
+
 
 #endif

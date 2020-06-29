@@ -109,7 +109,7 @@ void advDealTest() {
    cout << "----------- End of Value Population test ----------" << endl;
 }
 
-void valueAllocationTest(ostream& out) {
+void valueAllocationTest1(ostream& out) {
    Value egValue;
    Shape egShape;
    egShape.set(Position::E, Suit::C, 13, true);
@@ -191,16 +191,30 @@ void valueAllocationTest2(ostream& out) {
    }
 }
 
+void dealerTest(ostream& out) {
+    map<Suit, int> egEfilter = { {Suit::C, 13} }, egSfilter = { {Suit::D, 13} }, egWfilter ={ {Suit::H, 13} }, egNfilter = { {Suit::S, 13} }; 
+   map<Position, map<Suit, int>> egSpecificShapeFilter = { {Position::E, egEfilter},  {Position::S, egSfilter}, {Position::W, egWfilter}, {Position::N, egNfilter} };
+   vector<pair<Position, int>>   egNonSpecificShapeFilter;
+   map<Position, pair<int, int>> egHCPfilter;
+   Dealer egDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHCPfilter );
+   egDealer.test(out, true, true);
+
+  
+}
+
 int main(void) {
    try {
       ofstream of("debug.txt");
-      auto coutbuf = cout.rdbuf(of.rdbuf());
+      //auto coutbuf = cout.rdbuf(of.rdbuf());
       //advDealTest();
-      valueAllocationTest2(cout);
+      //valueAllocationTest1(cout);
+      dealerTest(cout);
       of.close();
    } catch (exception& ex) {
       cout << "Run time exception occurred.\n";
       cout << ex.what();
+   } catch (...) {
+      cout << "Bad things happened.\n";
    }
    return 0;
 }
