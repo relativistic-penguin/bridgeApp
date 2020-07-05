@@ -10,10 +10,10 @@
 #include "Board.h"
 #include "Shape.h"
 #include "Value.h"
-#include "Dealer.h"
+#include "ShapeFirstDealer.h"
 #include "ValueAllocator.h"
 #include "ValueConfig.h"
-#include "AdvDealer.h"
+#include "ValueFirstDealer.h"
 
 using namespace std;
 
@@ -95,8 +95,8 @@ void advDealTest() {
    map<Position, map<Suit, int>> egSpecificShapeFilter = { {Position::E, egEfilter} };
    vector<pair<Position, int>>   egNonSpecificShapeFilter = { {Position::W, 10} };
    map<Position, pair<int, int>> egHCPfilter = { {Position::E, {20, 40}}, {Position::S, {18, 40}} };
-   Dealer egDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHCPfilter );
-   egDealer.test(cout, true, false);
+   ShapeFirstDealer egShapeFirstDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHCPfilter );
+   egShapeFirstDealer.test(cout, true, false);
 
 /*
    Value egValue2;
@@ -112,28 +112,28 @@ void advDealTest() {
    cout << "----------- End of Value Population test ----------" << endl;
 }
 
-void newAdvDealerTest1(ostream& out) {
+void newValueFirstDealerTest1(ostream& out) {
    map<Suit, int> egEfilter = { {Suit::C, 13} }, egSfilter = { {Suit::D, 13} }, egWfilter = { {Suit::H, 13} }, egNfilter = { {Suit::S, 13} }; 
    map<Position, map<Suit, int>> egSpecificShapeFilter	    = { {Position::E, egEfilter}, {Position::S, egSfilter}, {Position::W, egWfilter}, {Position::N, egNfilter} };
    vector<pair<Position, int>>	 egNonSpecificShapeFilter;
    map<Position, pair<int, int>> egHcpFilter		    = { {Position::E, {10, 10}}, {Position::S, {10, 10}}, {Position::W, {10, 10}}, {Position::N, {10, 10}} };
-   AdvDealer egAdvDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHcpFilter);
+   ValueFirstDealer egValueFirstDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHcpFilter);
    auto startTime = chrono::high_resolution_clock::now();
-   Board egBoard = egAdvDealer.deal();
+   Board egBoard = egValueFirstDealer.deal();
    auto endTime = chrono::high_resolution_clock::now();
    cout << egBoard;
    chrono::duration<double> elapsedTime = endTime - startTime;
    out << "Dealing used: " << elapsedTime.count() << " s\n";
 }
 
-void newAdvDealerTest2(ostream& out) {
+void newValueFirstDealerTest2(ostream& out) {
    map<Suit, int> egEfilter = { {Suit::C, 13} }, egSfilter = { {Suit::D, 13} }, egWfilter = { {Suit::H, 13} }, egNfilter = { {Suit::S, 13} }; 
    map<Position, map<Suit, int>> egSpecificShapeFilter;
    vector<pair<Position, int>>	 egNonSpecificShapeFilter;
    map<Position, pair<int, int>> egHcpFilter;
-   AdvDealer egAdvDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHcpFilter);
+   ValueFirstDealer egValueFirstDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHcpFilter);
    auto startTime = chrono::high_resolution_clock::now();
-   Board egBoard = egAdvDealer.deal();
+   Board egBoard = egValueFirstDealer.deal();
    auto endTime = chrono::high_resolution_clock::now();
    cout << egBoard;
    chrono::duration<double> elapsedTime = endTime - startTime;
@@ -227,8 +227,8 @@ void dealerTest(ostream& out) {
    map<Position, map<Suit, int>> egSpecificShapeFilter = { {Position::E, egEfilter},  {Position::S, egSfilter}, {Position::W, egWfilter}, {Position::N, egNfilter} };
    vector<pair<Position, int>>   egNonSpecificShapeFilter;
    map<Position, pair<int, int>> egHCPfilter;
-   Dealer egDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHCPfilter );
-   egDealer.test(out, true, false);
+   ShapeFirstDealer egShapeFirstDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHCPfilter );
+   egShapeFirstDealer.test(out, true, false);
   
 }
 
@@ -237,8 +237,8 @@ void dealerTest2(ostream& out) {
    map<Position, map<Suit, int>> egSpecificShapeFilter;
    vector<pair<Position, int>>   egNonSpecificShapeFilter = { {Position::E, 4},  };
    map<Position, pair<int, int>> egHCPfilter = { {Position::E, {37, 37}} };
-   Dealer egDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHCPfilter );
-   egDealer.test(out, false, true);
+   ShapeFirstDealer egShapeFirstDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHCPfilter );
+   egShapeFirstDealer.test(out, false, true);
   
 }
 
@@ -338,13 +338,13 @@ void valueConfigGenTest2(ostream& out) {
    cout << "Found " << possibleConfigs.size() << " compatible configurations\n";
 }
 
-
+/*
 void hcpFilterDebug (ostream& out) {
-   Dealer egDealer;
+   ShapeFirstDealer egShapeFirstDealer;
    //map<Position, pair<int, int>> egFilter = {{Position::E, {30, 40}}};
    map<Position, pair<int, int>> egFilter;
    Value egValue;
-   vector<Value> egValues = egDealer.hcpFilter(egFilter, egValue);
+   vector<Value> egValues = egShapeFirstDealer.hcpFilter(egFilter, egValue);
    auto startTime = chrono::high_resolution_clock::now();
    shuffleCards(egValues);
    auto endTime = chrono::high_resolution_clock::now();
@@ -388,7 +388,7 @@ void hcpFilterDebug (ostream& out) {
    //   out << egValue;
    //}
 }
-
+*/
 
 
 int main(void) {
@@ -401,7 +401,7 @@ int main(void) {
       //hcpFilterDebug(cout);
       //valueConfigTest(cout);
       //valueConfigGenTest2(cout);
-      newAdvDealerTest2(cout);
+      newValueFirstDealerTest2(cout);
       of.close();
    } catch (exception& ex) {
       cout << "Run time exception occurred.\n";
