@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <set>
 #include <map>
+#include <chrono>
 #include "Dealer.h"
 #include "ValueAllocator.h"
 #include "Hand.h"
@@ -135,7 +136,7 @@ void Dealer::getReady() {
       }
       cout << "Init shape is" << endl;
       cout << initShape;
-      vector<Shape> unpopulatedShapes { nonSpecificShapeFilter(nonSpecificShapeRules, initShape) };
+      unpopulatedShapes = nonSpecificShapeFilter(nonSpecificShapeRules, initShape);
       cout << "Non specific shape rules are: " << endl;
       for (auto& [pos, val] : nonSpecificShapeRules) {
 	 cout << pos << ": " << val << endl;
@@ -145,15 +146,15 @@ void Dealer::getReady() {
 	 cout << shape;
       int count = 0;
       for (auto unpopulatedShape : unpopulatedShapes) {
-	 cout << "Run No. " << ++count << endl;
+	 //cout << "Run No. " << ++count << endl;
 	 vector<Shape> populatedShapes = shapePopulate(unpopulatedShape);
-	 cout << "Populated shapes: " << endl;
-	 for (auto populatedShape : populatedShapes) {
-	    cout << populatedShape;
-	 }
+	 //cout << "Populated shapes: " << endl;
+	 //for (auto populatedShape : populatedShapes) {
+	 //   cout << populatedShape;
+	 //}
 	 cout << "Finished looking for populated shapes for this unpopulated shape." << endl;
 	 possibleShapes.insert( pair<Shape, vector<Shape>>(unpopulatedShape, populatedShapes) );
-	 cout << "inserted" << endl;
+	 //cout << "inserted" << endl;
       }
       cout << "I am over the loop " << endl;
       Value initValue;
@@ -186,6 +187,70 @@ void Dealer::test(ostream& out, bool showShape, bool showValue) {
 	 out << value;
       }
    }
+   out << "INFO: Dealing Starts" << endl;
+   auto startTime = chrono::high_resolution_clock::now();
+   Board egBoard = deal();
+   /*
+   cout << "INFO: We have " << unpopulatedShapes.size() << " unpopulated Shapes" << endl;
+   cout << unpopulatedShapes.front();
+   cout << possibleShapes.at(unpopulatedShapes.front()).front() << endl;
+   Value targetVal;
+   targetVal.set(Position::E, Rank::A, 1, true);
+   targetVal.set(Position::E, Rank::K, 1, true);
+   targetVal.set(Position::E, Rank::Q, 1, true);
+   targetVal.set(Position::E, Rank::J, 1, true);
+
+   targetVal.set(Position::S, Rank::A, 1, true);
+   targetVal.set(Position::S, Rank::K, 1, true);
+   targetVal.set(Position::S, Rank::Q, 1, true);
+   targetVal.set(Position::S, Rank::J, 1, true);
+
+   targetVal.set(Position::W, Rank::A, 1, true);
+   targetVal.set(Position::W, Rank::K, 1, true);
+   targetVal.set(Position::W, Rank::Q, 1, true);
+   targetVal.set(Position::W, Rank::J, 1, true);
+
+   targetVal.set(Position::N, Rank::A, 1, true);
+   targetVal.set(Position::N, Rank::K, 1, true);
+   targetVal.set(Position::N, Rank::Q, 1, true);
+   targetVal.set(Position::N, Rank::J, 1, true);
+ 
+   int i = 0;
+   bool found = false;
+   for (const auto& val : possibleValues) {
+      if (targetVal.isEqual(val)) {
+	 cout << "Found target: " << endl;
+	 cout << val;
+	 cout << "At No. " << ++i;
+	 found = true;
+	 break;
+      } else
+	 i++;
+   }
+   if (!found)
+      cout << "WARNING: NOT FOUND" << endl;
+   out << "I am here" << endl;
+   Shape chosenShape;
+   chosenShape.set(Position::E, Suit::C, 13);
+   chosenShape.set(Position::S, Suit::D, 13);
+   chosenShape.set(Position::W, Suit::H, 13);
+   chosenShape.set(Position::N, Suit::S, 13);
+   out << "Chosen Shape is " << chosenShape;
+   out << "Chosen Value is " << targetVal;
+   ValueAllocator valAlloc(targetVal, chosenShape);
+   Board egBoard;
+   auto possibleAllocations = valAlloc.getAllocation(true);
+   if (possibleAllocations.size()) {
+      shuffleCards(possibleAllocations);
+      egBoard = dealFromAlloc(possibleAllocations.front(), valAlloc.getShape());
+   } else {
+      out << "WARNING: No valid allocation found. " << endl;
+   }
+   */
+   auto endTime = chrono::high_resolution_clock::now();
+   chrono::duration<double> elapsedTime = endTime - startTime;
+   out << "-------Dealing took " << elapsedTime.count() << "s\n";
+   out << egBoard;
 }
 
 vector<Value> Dealer::hcpFilter(const map<Position, pair<int, int>>& filter, const Value& value) {
@@ -194,6 +259,7 @@ vector<Value> Dealer::hcpFilter(const map<Position, pair<int, int>>& filter, con
    for (auto& pos : posList) {
       i++;
       cout << "Filtering HCP for pos: " << pos << endl;
+      auto startTime = chrono::high_resolution_clock::now();
       
       if (filter.find(pos) != filter.end())
 	 results = rowHCPfilter(results, pos, filter.at(pos).first, filter.at(pos).second, pos == *(posList.end() - 1));
@@ -201,6 +267,9 @@ vector<Value> Dealer::hcpFilter(const map<Position, pair<int, int>>& filter, con
 	 results = rowHCPfilter(results, pos, 0, (valueHCP.at(Rank::J) + valueHCP.at(Rank::Q) + valueHCP.at(Rank::K) + valueHCP.at(Rank::A) ) * VAL_CARDS, pos == *(posList.end() -1));
 
       cout << "Now results have " << results.size() << " entries.\n";
+      auto endTime = chrono::high_resolution_clock::now();
+      chrono::duration<double> elapsedTime = endTime - startTime;
+      cout << "This step took " << elapsedTime.count() << "s\n";
    }
    return results;
 }
@@ -213,92 +282,111 @@ vector<Value> Dealer::rowHCPfilter(const vector<Value>& values,const Position& p
       const Rank K = Rank::K;
       const Rank A = Rank::A;
 
-      map<Rank, int> rVal = {{J, 0}, {Q, 0}, {K, 0}, {A, 0}};
-      for (rVal[J] = 0; rVal[J] <= value.getRankVac(J); rVal[J]++) {
-	 if (rVal.at(J) * valueHCP.at(J) > max)
-	    break;
-	 bool jFixed = false;
-	 if (value.checkFix(pos, J)) {
-	    jFixed = true;
-	    rVal[J] = value.get(pos, J);
-	 }
-	 for (rVal[Q] = 0; rVal[Q] <= value.getRankVac(Q); rVal[Q]++) {
-	    if (rVal.at(J) * valueHCP.at(J) + rVal.at(Q) * valueHCP.at(Q) > max)
+      if (complete) {
+	 Value newValue = value;
+	 int valSum = 0;
+	 for (auto& rank : rankList) {
+	    int rankNum = newValue.getRankVac(rank);
+	    newValue.set(pos, rank, rankNum);
+	    valSum += rankNum * valueHCP.at(rank);
+	    if (valSum > max)
 	       break;
-	    bool qFixed = false;
-	    if (value.checkFix(pos, Q)) {
-	       qFixed = true;
-	       rVal[Q] = value.get(pos, Q);
+	 }
+	 if (valSum >= min && valSum <= max) {
+	    rowResults.push_back(newValue);
+	 }
+      }
+      else {
+	 map<Rank, int> rVal = {{J, 0}, {Q, 0}, {K, 0}, {A, 0}};
+	 for (rVal[J] = 0; rVal[J] <= value.getRankVac(J); rVal[J]++) {
+	    if (rVal.at(J) * valueHCP.at(J) > max)
+	       break;
+	    bool jFixed = false;
+	    if (value.checkFix(pos, J)) {
+	       jFixed = true;
+	       rVal[J] = value.get(pos, J);
 	    }
-	    for (rVal[K] = 0; rVal[K] <= value.getRankVac(K); rVal[K]++) {
-	       if (rVal.at(J) * valueHCP.at(J) + rVal.at(Q) * valueHCP.at(Q) + rVal.at(K) * valueHCP.at(K) > max)
+	    for (rVal[Q] = 0; rVal[Q] <= value.getRankVac(Q); rVal[Q]++) {
+	       if (rVal.at(J) * valueHCP.at(J) + rVal.at(Q) * valueHCP.at(Q) > max)
 		  break;
-	       bool kFixed = false;
-	       if (value.checkFix(pos, K)) {
-		  kFixed = true;
-		  rVal[K] = value.get(pos, K);
-		  //cout << "H fixed\n";
+	       bool qFixed = false;
+	       if (value.checkFix(pos, Q)) {
+		  qFixed = true;
+		  rVal[Q] = value.get(pos, Q);
 	       }
-	       for (rVal[A] = 0; rVal[A] <= value.getRankVac(A); rVal[A]++) {
-		  bool aFixed = false;
-		  if (value.checkFix(pos, A)) {
-		     aFixed = true;
-		     rVal[A] = value.get(pos, A);
-		     //cout << "S fixed\n";
-		     }
-		  int sum = rVal.at(J) * valueHCP.at(J) + 
-		            rVal.at(Q) * valueHCP.at(Q) + 
-			    rVal.at(K) * valueHCP.at(K) + 
-			    rVal.at(A) * valueHCP.at(A); 
-		  //cout << "C = " << sVal[C] << endl;
-		  //cout << "D = " << sVal[D] << endl;
-		  //cout << "H = " << sVal[H] << endl;
-		  //cout << "S = " << sVal[S] << endl;
-		  if (sum > max) {
-		     //cout << "Too large. Break\n";
+	       for (rVal[K] = 0; rVal[K] <= value.getRankVac(K); rVal[K]++) {
+		  if (rVal.at(J) * valueHCP.at(J) + rVal.at(Q) * valueHCP.at(Q) + rVal.at(K) * valueHCP.at(K) > max)
 		     break;
+		  bool kFixed = false;
+		  if (value.checkFix(pos, K)) {
+		     kFixed = true;
+		     rVal[K] = value.get(pos, K);
+		     //cout << "H fixed\n";
 		  }
-		  else if (sum >= min) {
-		     Value newValue = value;
-		     if (!jFixed)
-			newValue.set(pos, J, rVal.at(J));
-		     if (!qFixed)
-			newValue.set(pos, Q, rVal.at(Q));
-		     if (!kFixed)
-			newValue.set(pos, K, rVal.at(K));
-		     if (!aFixed)
-			newValue.set(pos, A, rVal.at(A));
-		     if (complete) {
-			//cout << "Last line find value:" << endl;
-			//cout << newValue;
-			bool filled = true;
-			for (auto& [pos, vac] : newValue.getRankVac()) {
-			   if (vac) {
-			      filled = false;
-			      break;
+		  for (rVal[A] = 0; rVal[A] <= value.getRankVac(A); rVal[A]++) {
+		     if (rVal[A] + rVal[K] + rVal[Q] + rVal[J] > CARDS) {
+			break;
+		     }
+		     bool aFixed = false;
+		     if (value.checkFix(pos, A)) {
+			aFixed = true;
+			rVal[A] = value.get(pos, A);
+			//cout << "S fixed\n";
+		     }
+		     int sum = rVal.at(J) * valueHCP.at(J) + 
+			rVal.at(Q) * valueHCP.at(Q) + 
+			rVal.at(K) * valueHCP.at(K) + 
+			rVal.at(A) * valueHCP.at(A); 
+		     //cout << "C = " << sVal[C] << endl;
+		     //cout << "D = " << sVal[D] << endl;
+		     //cout << "H = " << sVal[H] << endl;
+		     //cout << "S = " << sVal[S] << endl;
+		     if (sum > max) {
+			//cout << "Too large. Break\n";
+			break;
+		     }
+		     else if (sum >= min) {
+			Value newValue = value;
+			if (!jFixed)
+			   newValue.set(pos, J, rVal.at(J));
+			if (!qFixed)
+			   newValue.set(pos, Q, rVal.at(Q));
+			if (!kFixed)
+			   newValue.set(pos, K, rVal.at(K));
+			if (!aFixed)
+			   newValue.set(pos, A, rVal.at(A));
+			if (complete) {
+			   //cout << "Last line find value:" << endl;
+			   //cout << newValue;
+			   bool filled = true;
+			   for (auto& [pos, vac] : newValue.getRankVac()) {
+			      if (vac) {
+				 filled = false;
+				 break;
+			      }
+			   }
+			   //cout << "It is " << filled << endl;
+			   if (filled) {
+			      //cout << "So it is accepted." << endl;
+			      rowResults.push_back(newValue);
 			   }
 			}
-			//cout << "It is " << filled << endl;
-			if (filled) {
-			   //cout << "So it is accepted." << endl;
+			else
 			   rowResults.push_back(newValue);
-			}
+			//cout << "New result: " << newShape;
 		     }
-		     else
-			rowResults.push_back(newValue);
-		     //cout << "New result: " << newShape;
+		     if (aFixed)
+			break;
 		  }
-		  if (aFixed)
+		  if (kFixed)
 		     break;
 	       }
-	       if (kFixed)
+	       if (qFixed)
 		  break;
 	    }
-	    if (qFixed)
-	       break;
+	    if (jFixed)
+	       break; 
 	 }
-	 if (jFixed)
-	    break; 
       }
    }
    return rowResults;
@@ -343,9 +431,13 @@ vector<Shape> Dealer::shapePopulate(const Shape& shape) {
 //   cout << "Attempting to populate shape\n" << shape;
    vector<Shape> results = {shape};
    for (auto& pos : posList) {
-//      cout << "Populating position " << pos << endl;
-//      cout << "From Shape " << results.front();
+      cout << "Populating position " << pos << endl;
+      auto startTime = chrono::high_resolution_clock::now();
       results = posPopulate(results, pos);
+      auto endTime = chrono::high_resolution_clock::now();
+      chrono::duration<double> elapsedTime = endTime - startTime;
+      cout << "Results now have " << results.size() << "Shapes\n";
+      cout << "This step took " << elapsedTime.count() << "s\n";
    }
    return results;
 }

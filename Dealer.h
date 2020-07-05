@@ -26,9 +26,6 @@ class Dealer {
       vector<Shape>              shapePopulate(const Shape& shape);
       vector<Shape>              posPopulate(const vector<Shape>& shapes, Position pos);
 
-      vector<Value>              hcpFilter(const map<Position, pair<int, int>>& filter, const Value& value);
-      vector<Value>	         rowHCPfilter(const vector<Value>& values, const Position& pos, int min, int max, bool complete);
-
       vector<Shape>              compatibleUnpopStates(Value);
       vector<Shape>              compatibleFinalStates(Value);
 
@@ -43,6 +40,9 @@ class Dealer {
       void  getReady();
       bool  isReady() {return ready;} 
       Board deal();
+      vector<Value>              hcpFilter(const map<Position, pair<int, int>>& filter, const Value& value);
+      vector<Value>	         rowHCPfilter(const vector<Value>& values, const Position& pos, int min, int max, bool complete);
+
 
       void  test(ostream&, bool showShape = false, bool showValue = false);
 };

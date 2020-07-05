@@ -13,6 +13,7 @@ class Board {
       map<Position, Hand> config;
    public:
       Board();
+      Board(map<Position, set<Card>>);
       Board(map<Position, Hand> config) {this->config = config;}
       map<Position, Hand> get() {return config;}
       Hand get(Position pos) {return config.at(pos);}

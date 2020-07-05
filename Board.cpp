@@ -3,7 +3,7 @@
 #include <random>
 #include "Board.h"
 
-using std::pair;
+using std::pair, std::make_pair;
 
 map<Position, Hand> boardBuilder(vector<int> seq, Position dealer) {
    if (seq.size() != 52)
@@ -50,3 +50,8 @@ Board::Board() {
    config = boardBuilder(seq, Position::E);
 }
 
+Board::Board(map<Position, set<Card>> oldMap) {
+   for (auto& pos : posList) {
+      config.insert(make_pair(pos, Hand(oldMap.at(pos))));
+   }
+}

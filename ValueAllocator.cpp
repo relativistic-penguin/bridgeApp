@@ -6,7 +6,7 @@
 
 using namespace std;
 
-vector<vector<Suit>> select(int remain, vector<Suit> remainChoices) {
+vector<vector<Suit>> ValueAllocator::select(int remain, vector<Suit> remainChoices) {
    vector<vector<Suit>> results;
    if (remain == 1) {
       for (auto& choice : remainChoices) {
@@ -22,7 +22,7 @@ vector<vector<Suit>> select(int remain, vector<Suit> remainChoices) {
 	    auto& thisSuit = remainChoices[j];
 	    newChoices.push_back(thisSuit);
 	 }
-	 vector<vector<Suit>> nextLevel = select(remain - 1, newChoices);
+	 vector<vector<Suit>> nextLevel = ValueAllocator::select(remain - 1, newChoices);
 	 for (auto& suits : nextLevel) {
 	    suits.push_back(suit);
 	    results.push_back(suits);
@@ -121,7 +121,7 @@ vector<allocType> ValueAllocator::getAllocation(bool all) {
 	       allowedSuit.push_back(suit);
 	    }
 	 }
-	 vector<vector<Suit>> highCardAllocs = select(vlAllocator.getVal().get(pos, rank), allowedSuit);
+	 vector<vector<Suit>> highCardAllocs = ValueAllocator::select(vlAllocator.getVal().get(pos, rank), allowedSuit);
 	 if (!highCardAllocs.empty()) {
 	    for (auto& allocSuits : highCardAllocs) {
 	       Shape newShape = vlShape;

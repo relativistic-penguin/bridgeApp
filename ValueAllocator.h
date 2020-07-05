@@ -13,6 +13,7 @@ class ValueAllocator {
    friend ostream& operator<<(ostream&, ValueAllocator);
    typedef map<Position, map<Rank, vector<Suit>>> allocType;
    private:
+      static vector<vector<Suit>>  select(int remain, vector<Suit> remainChoices);
       allocType		    alloc;
       Value		    reqVal;
       Shape		    reqShape;

@@ -3,6 +3,7 @@
 #include <stack>
 #include <tuple>
 #include <set>
+#include <chrono>
 #include "utils.h"
 #include "Card.h"
 #include "Hand.h"
@@ -11,6 +12,8 @@
 #include "Value.h"
 #include "Dealer.h"
 #include "ValueAllocator.h"
+#include "ValueConfig.h"
+#include "AdvDealer.h"
 
 using namespace std;
 
@@ -109,6 +112,34 @@ void advDealTest() {
    cout << "----------- End of Value Population test ----------" << endl;
 }
 
+void newAdvDealerTest1(ostream& out) {
+   map<Suit, int> egEfilter = { {Suit::C, 13} }, egSfilter = { {Suit::D, 13} }, egWfilter = { {Suit::H, 13} }, egNfilter = { {Suit::S, 13} }; 
+   map<Position, map<Suit, int>> egSpecificShapeFilter	    = { {Position::E, egEfilter}, {Position::S, egSfilter}, {Position::W, egWfilter}, {Position::N, egNfilter} };
+   vector<pair<Position, int>>	 egNonSpecificShapeFilter;
+   map<Position, pair<int, int>> egHcpFilter		    = { {Position::E, {10, 10}}, {Position::S, {10, 10}}, {Position::W, {10, 10}}, {Position::N, {10, 10}} };
+   AdvDealer egAdvDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHcpFilter);
+   auto startTime = chrono::high_resolution_clock::now();
+   Board egBoard = egAdvDealer.deal();
+   auto endTime = chrono::high_resolution_clock::now();
+   cout << egBoard;
+   chrono::duration<double> elapsedTime = endTime - startTime;
+   out << "Dealing used: " << elapsedTime.count() << " s\n";
+}
+
+void newAdvDealerTest2(ostream& out) {
+   map<Suit, int> egEfilter = { {Suit::C, 13} }, egSfilter = { {Suit::D, 13} }, egWfilter = { {Suit::H, 13} }, egNfilter = { {Suit::S, 13} }; 
+   map<Position, map<Suit, int>> egSpecificShapeFilter;
+   vector<pair<Position, int>>	 egNonSpecificShapeFilter;
+   map<Position, pair<int, int>> egHcpFilter;
+   AdvDealer egAdvDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHcpFilter);
+   auto startTime = chrono::high_resolution_clock::now();
+   Board egBoard = egAdvDealer.deal();
+   auto endTime = chrono::high_resolution_clock::now();
+   cout << egBoard;
+   chrono::duration<double> elapsedTime = endTime - startTime;
+   out << "Dealing used: " << elapsedTime.count() << " s\n";
+}
+
 void valueAllocationTest1(ostream& out) {
    Value egValue;
    Shape egShape;
@@ -192,15 +223,173 @@ void valueAllocationTest2(ostream& out) {
 }
 
 void dealerTest(ostream& out) {
-    map<Suit, int> egEfilter = { {Suit::C, 13} }, egSfilter = { {Suit::D, 13} }, egWfilter ={ {Suit::H, 13} }, egNfilter = { {Suit::S, 13} }; 
+   map<Suit, int> egEfilter = { {Suit::C, 13} }, egSfilter = { {Suit::D, 13} }, egWfilter ={ {Suit::H, 13} }, egNfilter = { {Suit::S, 13} }; 
    map<Position, map<Suit, int>> egSpecificShapeFilter = { {Position::E, egEfilter},  {Position::S, egSfilter}, {Position::W, egWfilter}, {Position::N, egNfilter} };
    vector<pair<Position, int>>   egNonSpecificShapeFilter;
    map<Position, pair<int, int>> egHCPfilter;
    Dealer egDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHCPfilter );
-   egDealer.test(out, true, true);
-
+   egDealer.test(out, true, false);
   
 }
+
+void dealerTest2(ostream& out) {
+   //map<Suit, int> egEfilter = { {Suit::C, 13} }, egSfilter = { {Suit::D, 13} }, egWfilter ={ {Suit::H, 13} }, egNfilter = { {Suit::S, 13} }; 
+   map<Position, map<Suit, int>> egSpecificShapeFilter;
+   vector<pair<Position, int>>   egNonSpecificShapeFilter = { {Position::E, 4},  };
+   map<Position, pair<int, int>> egHCPfilter = { {Position::E, {37, 37}} };
+   Dealer egDealer(egSpecificShapeFilter, egNonSpecificShapeFilter, egHCPfilter );
+   egDealer.test(out, false, true);
+  
+}
+
+void valueConfigTest(ostream& out) {
+   ValueConfig egValCon;
+   out << egValCon;
+   out << "Set E K C" << endl;
+   egValCon.set(Position::E, Rank::K, Suit::C);
+   out << "CK is available: " << egValCon.cardAvailable(Suit::C, Rank::K) << endl;
+   out << "Pos E value: " << egValCon.posVal(Position::E) << endl;
+   out << "Suit C available rank: ";
+   for (auto&  rank : egValCon.suitAvaiRank(Suit::C))
+      out << rank << " ";
+   out << endl;
+   out << "Rank K avaialble suit: ";
+   for (auto& suit : egValCon.rankAvaiSuit(Rank::K))
+      out << suit << " ";
+   out << endl;
+   out << egValCon;
+   out << "Unset E K C" << endl;
+   egValCon.reset(Position::E, Rank::K, Suit::C);
+   out << egValCon;
+   out << "CK is available: " << egValCon.cardAvailable(Suit::C, Rank::K) << endl;
+   out << "Complete: " << egValCon.complete() << endl;
+   int i = 0;
+   for (auto& suit : suitList) {
+      for (auto& rank : rankList) {
+	 if (++i <= CARDS) {
+	    egValCon.set(Position::E, rank, suit);
+	 }
+	 else {
+	    egValCon.set(Position::W, rank, suit);
+	 }
+      }
+   }
+   out << egValCon;
+   out << "Complete: " << egValCon.complete() << endl;
+   out << "reset S A\n";
+   egValCon.reset(Rank::A, Suit::S);
+   out << egValCon;
+   try {
+      egValCon.set(Position::N, Rank::K, Suit::H);
+      out << "ERROR: exception not caught." << endl;
+   } catch (invalid_argument& ex) {
+      out << "Caught exception as expected. Message is " << ex.what() << endl;
+      out << "Test successfully completed!" << endl;
+   }
+}
+
+void valueConfigGenTest(ostream& out) {
+   Value egValue;
+   egValue.set(Position::E, Rank::A, 4, true);
+   egValue.set(Position::E, Rank::K, 4, true);
+   egValue.set(Position::E, Rank::Q, 4, true);
+   egValue.set(Position::E, Rank::J, 1, true);
+   
+   egValue.set(Position::S, Rank::J, 3, true);
+
+   out << egValue;
+
+   vector<ValueConfig> possibleConfigs = egValue.compatibleConfig();
+   int i = 0;
+   for (auto& conf : possibleConfigs) {
+      out << ++i << endl;
+      out << conf;
+   }
+}
+
+void valueConfigGenTest2(ostream& out) {
+   Value egValue;
+   egValue.set(Position::E, Rank::A, 1, true);
+   egValue.set(Position::E, Rank::K, 1, true);
+   egValue.set(Position::E, Rank::Q, 1, true);
+   egValue.set(Position::E, Rank::J, 1, true);
+
+   egValue.set(Position::S, Rank::A, 1, true);
+   egValue.set(Position::S, Rank::K, 1, true);
+   egValue.set(Position::S, Rank::Q, 1, true);
+   egValue.set(Position::S, Rank::J, 1, true);
+
+   egValue.set(Position::W, Rank::A, 1, true);
+   egValue.set(Position::W, Rank::K, 1, true);
+   egValue.set(Position::W, Rank::Q, 1, true);
+   egValue.set(Position::W, Rank::J, 1, true);
+
+   egValue.set(Position::N, Rank::A, 1, true);
+   egValue.set(Position::N, Rank::K, 1, true);
+   egValue.set(Position::N, Rank::Q, 1, true);
+   egValue.set(Position::N, Rank::J, 1, true);
+   out << egValue;
+
+   auto startTime = chrono::high_resolution_clock::now();
+   vector<ValueConfig> possibleConfigs = egValue.compatibleConfig();
+   auto endTime = chrono::high_resolution_clock::now();
+   chrono::duration<double> elapsedTime = endTime - startTime;
+   cout << "Calculation took: " << elapsedTime.count() << "s\n";
+   cout << "Found " << possibleConfigs.size() << " compatible configurations\n";
+}
+
+
+void hcpFilterDebug (ostream& out) {
+   Dealer egDealer;
+   //map<Position, pair<int, int>> egFilter = {{Position::E, {30, 40}}};
+   map<Position, pair<int, int>> egFilter;
+   Value egValue;
+   vector<Value> egValues = egDealer.hcpFilter(egFilter, egValue);
+   auto startTime = chrono::high_resolution_clock::now();
+   shuffleCards(egValues);
+   auto endTime = chrono::high_resolution_clock::now();
+   chrono::duration<double> elapsedTime = endTime - startTime;
+   out << "Value shuffling requires " << elapsedTime.count() << "s\n";
+   Value targetVal;
+   targetVal.set(Position::E, Rank::A, 1, true);
+   targetVal.set(Position::E, Rank::K, 1, true);
+   targetVal.set(Position::E, Rank::Q, 1, true);
+   targetVal.set(Position::E, Rank::J, 1, true);
+
+   targetVal.set(Position::S, Rank::A, 1, true);
+   targetVal.set(Position::S, Rank::K, 1, true);
+   targetVal.set(Position::S, Rank::Q, 1, true);
+   targetVal.set(Position::S, Rank::J, 1, true);
+
+   targetVal.set(Position::W, Rank::A, 1, true);
+   targetVal.set(Position::W, Rank::K, 1, true);
+   targetVal.set(Position::W, Rank::Q, 1, true);
+   targetVal.set(Position::W, Rank::J, 1, true);
+
+   targetVal.set(Position::N, Rank::A, 1, true);
+   targetVal.set(Position::N, Rank::K, 1, true);
+   targetVal.set(Position::N, Rank::Q, 1, true);
+   targetVal.set(Position::N, Rank::J, 1, true);
+ 
+   int i = 0;
+   for (const auto& val : egValues) {
+      if (targetVal.isEqual(val)) {
+	 cout << "Found target: " << endl;
+	 cout << val;
+	 cout << "At No. " << ++i;
+	 break;
+      } else
+	 i++;
+   }
+   cout << "Done." << endl;
+   //int counter = 0;
+   //for (Value egValue : egValues) {
+   //   out << "Possible Value: " << ++counter << "\n";
+   //   out << egValue;
+   //}
+}
+
+
 
 int main(void) {
    try {
@@ -208,7 +397,11 @@ int main(void) {
       //auto coutbuf = cout.rdbuf(of.rdbuf());
       //advDealTest();
       //valueAllocationTest1(cout);
-      dealerTest(cout);
+      //dealerTest2(cout);
+      //hcpFilterDebug(cout);
+      //valueConfigTest(cout);
+      //valueConfigGenTest2(cout);
+      newAdvDealerTest2(cout);
       of.close();
    } catch (exception& ex) {
       cout << "Run time exception occurred.\n";
