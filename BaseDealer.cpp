@@ -17,21 +17,21 @@ BaseDealer::BaseDealer(specificShapeType ssr) {
 
 vector<Value> BaseDealer::hcpFilter(const map<Position, pair<int, int>>& filter, const Value& value) {
    vector<Value> results {value};
-   int i = 0;
+   //int i = 0;
    for (auto& pos : posList) {
-      i++;
-      cout << "Filtering HCP for pos: " << pos << endl;
-      auto startTime = chrono::high_resolution_clock::now();
+      //i++;
+      //cout << "Filtering HCP for pos: " << pos << endl;
+      //auto startTime = chrono::high_resolution_clock::now();
       
       if (filter.find(pos) != filter.end())
 	 results = rowHCPfilter(results, pos, filter.at(pos).first, filter.at(pos).second, pos == *(posList.end() - 1));
       else
 	 results = rowHCPfilter(results, pos, 0, (valueHCP.at(Rank::J) + valueHCP.at(Rank::Q) + valueHCP.at(Rank::K) + valueHCP.at(Rank::A) ) * VAL_CARDS, pos == *(posList.end() -1));
 
-      cout << "Now results have " << results.size() << " entries.\n";
-      auto endTime = chrono::high_resolution_clock::now();
-      chrono::duration<double> elapsedTime = endTime - startTime;
-      cout << "This step took " << elapsedTime.count() << "s\n";
+      //cout << "Now results have " << results.size() << " entries.\n";
+      //auto endTime = chrono::high_resolution_clock::now();
+      //chrono::duration<double> elapsedTime = endTime - startTime;
+      //cout << "This step took " << elapsedTime.count() << "s\n";
    }
    return results;
 }

@@ -19,13 +19,33 @@ typedef map<Position, pair<int, int>> hcpType;
 
 vector<ValueConfig> ValueFirstDealer::filterConfig(const Shape shape, const vector<ValueConfig>& compatibleConfigs) {
    vector<ValueConfig> results;
+   //cout << "Prefilter length " << compatibleConfigs.size() << endl;
+   //cout << "Using Shape: " << endl << shape;
+   //cout << "It is fixed at: ";
+   //for (auto& pos : posList) {
+   //   for (auto& suit : suitList) {
+	// if (shape.checkFix(pos,suit))
+	//    cout << pos << " " << suit << ", ";
+      //}
+   //}
+   //cout << endl;
    for (auto& config : compatibleConfigs) {
+      //cout << "Analysing Config:" << endl;
+      //cout <<config;
       bool failed = false;
       for (auto& pos : posList) {
 	 for (auto& suit : suitList) {
-	    if (shape.checkFix(pos, suit) && shape.get(pos, suit) < config.posSuitLength(pos, suit)) {
-	       failed = true;
-	       break;
+	    if (shape.checkFix(pos, suit)) {
+	       //cout << "Fixed " << pos << " " << suit << endl;
+	       //cout << "Shape length " << shape.get(pos, suit) << endl;
+	       //cout << "Config length " << config.posSuitLength(pos, suit) << endl;
+	       //cout << "Remaining Shape length " << CARDS - shape.get(pos, suit) << endl;
+	       //cout << "Remaining Config length " << HIGH_CARDS - config.posSuitLength(pos, suit) << endl; 
+	       if( shape.get(pos, suit) < config.posSuitLength(pos, suit) || CARDS - shape.get(pos, suit) < HIGH_CARDS - config.posSuitLength(pos, suit)  ) {
+		  //cout << "Break"i << endl;
+		  failed = true;
+		  break;
+	       }
 	    }
 	 }
 	 if (failed)
@@ -34,6 +54,7 @@ vector<ValueConfig> ValueFirstDealer::filterConfig(const Shape shape, const vect
       if (!failed)
 	 results.push_back(config);
    }
+   //cout << "Post filter length " << results.size() << endl;
    return results;
 }
 /*
@@ -106,14 +127,14 @@ bool ValueFirstDealer::isPossible(const Shape& shape, const ValueConfig& valCon)
 Board ValueFirstDealer::dealLowCards(const Shape& shape,const ValueConfig& valCon) {
    // first deal high cards according to Value Config
    map<Position, set<Card>> results = dealHighCards(valCon);
-   cout << "Dealt high cards as follows:\n";
-   for (auto& pos : posList) {
-      cout << pos << ": ";
-      for (auto& card : results.at(pos)) {
-	 cout << card << " ";
-      }
-      cout << endl;
-   }
+   //cout << "Dealt high cards as follows:\n";
+   //for (auto& pos : posList) {
+   //   cout << pos << ": ";
+   //   for (auto& card : results.at(pos)) {
+	// cout << card << " ";
+      //}
+      //cout << endl;
+   //}
    // low cards sorted by suit
    map<Suit, pair<vector<Rank>, int>> lowCards;
    vector<Rank> lowRankSeq = numRankList;
@@ -165,16 +186,16 @@ Board ValueFirstDealer::dealLowCards(const Shape& shape,const ValueConfig& valCo
 }
 
 ValueFirstDealer::ValueFirstDealer(specificShapeType speRules, nonSpecificShapeType blurRules, hcpType valRules) : BaseDealer(speRules) {
-   cout << "Specific Filter Applied:\n" << initShape;
+   //cout << "Specific Filter Applied:\n" << initShape;
    reqShapes = nonSpecificShapeFilter(blurRules, initShape);
-   cout << "Non-specific Filter Applied:\n";
-   int counter = 0;
-   for (auto& shape : reqShapes) {
-      cout << "Shape No. " << ++counter << endl << shape;
-   }
+   //cout << "Non-specific Filter Applied:\n";
+   //int counter = 0;
+   //for (auto& shape : reqShapes) {
+   //   cout << "Shape No. " << ++counter << endl << shape;
+   //}
    Value initValue;
    reqVal = hcpFilter(valRules, initValue);
-   cout << "Value filter applied. It has " << reqVal.size() << " possible Values." << endl;
+   //cout << "Value filter applied. It has " << reqVal.size() << " possible Values." << endl;
 }
 
 void ValueFirstDealer::test() {
@@ -227,7 +248,7 @@ void ValueFirstDealer::test() {
 Board ValueFirstDealer::deal() { 
    shuffleCards(reqVal);
    shuffleCards(reqShapes);
-   cout << "Shuffled " << reqShapes.size() << " shapes" << endl;
+   //cout << "Shuffled " << reqShapes.size() << " shapes" << endl;
    int counter = 0;
    for (auto val : reqVal) {
       //cout << "Checking Value No. " << ++counter << endl;
@@ -237,19 +258,19 @@ Board ValueFirstDealer::deal() {
       for (auto shape : reqShapes) {
 	 //cout << "Chose the following Shape:\n" << shape;
 	 vector<ValueConfig> allowedConfigs = filterConfig(shape, compatibleConfigs); //TODO: filterConfig
-	 //cout << "Found " << compatibleConfigs.size() << " allowed Configs based on chosen shape" << endl;
+	 //cout << "Found " << allowedConfigs.size() << " allowed Configs based on chosen shape" << endl;
 	 if (!allowedConfigs.empty()) {
 	    shuffleCards(allowedConfigs);
 	    for (auto chosenConfig : allowedConfigs) {
 	       //ValueConfig chosenConfig = randomSelect(allowedConfigs); TODO: randomSelecti
 	       bool possible = isPossible(shape, chosenConfig);
 	       if (possible) {
-		  cout << "This Value is possible" << endl;
-		  cout << val;
-		  cout << "This Config is possible" << endl;
-		  cout << "Chosen Config: \n" << chosenConfig;
+		  //cout << "This Value is possible" << endl;
+		  //cout << val;
+		  //cout << "This Config is possible" << endl;
+		  //cout << "Chosen Config: \n" << chosenConfig;
 		  Board newBoard = dealLowCards(shape, chosenConfig); //TODO: dealLowCards
-		  cout << "Dealt low cards" << endl;
+		  //cout << "Dealt low cards" << endl;
 		  return newBoard;
 	       }
 	       /*

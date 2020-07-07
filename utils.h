@@ -22,7 +22,7 @@ const std::initializer_list posList  = {Position::E, Position::S, Position::W, P
 const std::initializer_list numRankList = {Rank::N2, Rank::N3, Rank::N4, Rank::N5, Rank::N6, Rank::N7, Rank::N8, Rank::N9, Rank::T};
 
 const int CARDS = 13;
-
+const int HIGH_CARDS = 4;
 
 #endif
 

@@ -14,6 +14,7 @@
 #include "ValueAllocator.h"
 #include "ValueConfig.h"
 #include "ValueFirstDealer.h"
+#include "DealingMachine.h"
 
 using namespace std;
 
@@ -390,6 +391,10 @@ void hcpFilterDebug (ostream& out) {
 }
 */
 
+void dealingMachineTest(istream& in, ostream& out) {
+   DealingMachine egDM(in, out);
+   egDM.parser();
+}
 
 int main(void) {
    try {
@@ -401,7 +406,8 @@ int main(void) {
       //hcpFilterDebug(cout);
       //valueConfigTest(cout);
       //valueConfigGenTest2(cout);
-      newValueFirstDealerTest2(cout);
+      //newValueFirstDealerTest2(cout);
+      dealingMachineTest(cin, cout);
       of.close();
    } catch (exception& ex) {
       cout << "Run time exception occurred.\n";

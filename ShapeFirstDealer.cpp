@@ -90,8 +90,7 @@ Board ShapeFirstDealer::deal() {
 	 }
       }
    }
-   cout << "Warning: Not Possible" << endl;
-   return egBoard;
+   throw invalid_argument("Not Possible to fulfil all constraints");
 }
 
 void ShapeFirstDealer::setSpecificShapeRules(specificShapeType rule) {
@@ -114,20 +113,20 @@ void ShapeFirstDealer::setHCPrules(hcpType rule) {
 }
 
 void ShapeFirstDealer::getReady() {
-   cout << "Getting ready!" << endl;
+   //cout << "Getting ready!" << endl;
    if (!ready) {
-      cout << "Not ready yet. now getting ready..." << endl;
-      cout << "Init shape is" << endl;
-      cout << initShape;
+      //cout << "Not ready yet. now getting ready..." << endl;
+      //cout << "Init shape is" << endl;
+      //cout << initShape;
       unpopulatedShapes = nonSpecificShapeFilter(nonSpecificShapeRules, initShape);
-      cout << "Non specific shape rules are: " << endl;
-      for (auto& [pos, val] : nonSpecificShapeRules) {
-	 cout << pos << ": " << val << endl;
-      }
-      cout << "==> unpopulated shape is: " << endl;
-      for (auto& shape : unpopulatedShapes)
-	 cout << shape;
-      int count = 0;
+      //cout << "Non specific shape rules are: " << endl;
+      //for (auto& [pos, val] : nonSpecificShapeRules) {
+	// cout << pos << ": " << val << endl;
+      //}
+      //cout << "==> unpopulated shape is: " << endl;
+      //for (auto& shape : unpopulatedShapes)
+	// cout << shape;
+      //int count = 0;
       for (auto unpopulatedShape : unpopulatedShapes) {
 	 //cout << "Run No. " << ++count << endl;
 	 vector<Shape> populatedShapes = shapePopulate(unpopulatedShape);
@@ -135,16 +134,16 @@ void ShapeFirstDealer::getReady() {
 	 //for (auto populatedShape : populatedShapes) {
 	 //   cout << populatedShape;
 	 //}
-	 cout << "Finished looking for populated shapes for this unpopulated shape." << endl;
+	 //cout << "Finished looking for populated shapes for this unpopulated shape." << endl;
 	 possibleShapes.insert( pair<Shape, vector<Shape>>(unpopulatedShape, populatedShapes) );
 	 //cout << "inserted" << endl;
       }
-      cout << "I am over the loop " << endl;
+     // cout << "I am over the loop " << endl;
       Value initValue;
       possibleValues = hcpFilter(hcpRules, initValue);
       ready = true;
    }
-   cout << "Now ready!" << endl;
+   //cout << "Now ready!" << endl;
 }
 
 void ShapeFirstDealer::test(ostream& out, bool showShape, bool showValue) {
@@ -241,13 +240,13 @@ vector<Shape> ShapeFirstDealer::shapePopulate(const Shape& shape) {
 //   cout << "Attempting to populate shape\n" << shape;
    vector<Shape> results = {shape};
    for (auto& pos : posList) {
-      cout << "Populating position " << pos << endl;
-      auto startTime = chrono::high_resolution_clock::now();
+      //cout << "Populating position " << pos << endl;
+      //auto startTime = chrono::high_resolution_clock::now();
       results = posPopulate(results, pos);
-      auto endTime = chrono::high_resolution_clock::now();
-      chrono::duration<double> elapsedTime = endTime - startTime;
-      cout << "Results now have " << results.size() << "Shapes\n";
-      cout << "This step took " << elapsedTime.count() << "s\n";
+      //auto endTime = chrono::high_resolution_clock::now();
+      //chrono::duration<double> elapsedTime = endTime - startTime;
+      //cout << "Results now have " << results.size() << "Shapes\n";
+      //cout << "This step took " << elapsedTime.count() << "s\n";
    }
    return results;
 }
